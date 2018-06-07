@@ -65,30 +65,30 @@ contract Ownable {
 }
 
 contract Pausable is Ownable {
-    event Pause();
-    event Unpause();
+  event Pause();
+  event Unpause();
 
-    bool public paused = false;
+  bool public paused = false;
 
-    modifier whenNotPaused() {
+  modifier whenNotPaused() {
     require(!paused);
     _;
-    }
+  }
 
-    modifier whenPaused() {
+  modifier whenPaused() {
     require(paused);
     _;
-    }
+  }
 
-    function pause() onlyOwner whenNotPaused public {
+  function pause() onlyOwner whenNotPaused public {
     paused = true;
     emit Pause();
-    }
+  }
 
-    function unpause() onlyOwner whenPaused public {
+  function unpause() onlyOwner whenPaused public {
     paused = false;
     emit Unpause();
-    }
+  }
 }
 
 contract ERC20 {
@@ -134,6 +134,7 @@ contract PRASMToken is ERC20, Ownable, Pausable {
 
     event Unlock(address indexed holder, uint256 value);
     event Lock(address indexed holder, uint256 value);
+    event Burn(address indexed owner, uint256 value);
 
     constructor() public {
         name = "PRASM";
@@ -259,6 +260,15 @@ contract PRASMToken is ERC20, Ownable, Pausable {
 
     function claimToken(ERC20 token, address _to, uint256 _value) public onlyOwner returns (bool) {
         token.transfer(_to, _value);
+        return true;
+    }
+
+    function burn(uint256 _value) public onlyOwner returns (bool success) {
+        require(_value <= balances[msg.sender]);
+        address burner = msg.sender;
+        balances[burner] = balances[burner].sub(_value);
+        totalSupply_ = totalSupply_.sub(_value);
+        emit Burn(burner, _value);
         return true;
     }
 
